@@ -49,11 +49,13 @@ public class PasswordManagerBackendApplication {
 				log.info("");
 			});
 
-			User result2 = repository.findByUsername("Chloe");
-			log.info("User found with Username:");
-			log.info("--------------------------------");
-			log.info(result2.getUsername());
-			log.info("");
+			Optional <User> result2 = repository.findByUsername("Chloe");
+			result2.ifPresent(user -> {
+				log.info("User found with Username:");
+				log.info("--------------------------------");
+				log.info(user.getUsername());
+				log.info("");
+			});
 
 			// fetch customers by username
 			List<User> allList = repository.findAll();
