@@ -1,20 +1,27 @@
 package com.passwordmanager.password_manager.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document
 public class User {
 
     @Id
-    @GeneratedValue
-    private Long id;
+    private String id;
+    @Indexed(unique = true)
     private String username;
+    @Indexed(unique = true)
     private String email;
+    @Indexed(unique = true)
     private String masterPasswordHash; //hashed password
 
     protected User() {
+    }
+
+    public User(String username, String email) {
+        this.username = username;
+        this.email = email;
     }
 
     public User(String username, String email, String masterPasswordHash) {
@@ -23,7 +30,7 @@ public class User {
         this.masterPasswordHash = masterPasswordHash;
     }
 
-    public Long getId() {
+    public String getId() {
         return this.id;
     }
 
@@ -39,7 +46,7 @@ public class User {
         return this.masterPasswordHash;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

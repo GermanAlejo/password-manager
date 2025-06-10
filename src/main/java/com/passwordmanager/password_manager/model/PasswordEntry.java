@@ -1,17 +1,17 @@
 package com.passwordmanager.password_manager.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document
 public class PasswordEntry {
 
     @Id
-    @GeneratedValue
     private Long id;
     private String entryName;
     private String username;
+    @Indexed(unique = true)
     private String encryptedPassword;
 
     private PasswordEntry() {
