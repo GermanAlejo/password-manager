@@ -26,7 +26,9 @@ public class UserService {
 
     public User registerNewUser(LoginDTO login) {
         //TODO: Do more checks (validation here)
+        //Are more validations needed if we already implemented the validationhandler???
 
+        
         //TODO: Hash the password here
         String hashedPassword = login.getPassword();
 

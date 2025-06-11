@@ -59,7 +59,7 @@ public class PasswordManagerBackendApplication {
 
 			// fetch customers by username
 			List<User> allList = repository.findAll();
-			log.info("Customer found with findByLastName('Bauer'):");
+			log.info("Users found with findByLastName('Bauer'): ");
 			log.info("--------------------------------------------");
 			allList.forEach(user -> {
 				log.info(user.toString());

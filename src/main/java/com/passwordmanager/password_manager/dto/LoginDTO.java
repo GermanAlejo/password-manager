@@ -1,9 +1,18 @@
 package com.passwordmanager.password_manager.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class LoginDTO {
+
+    @NotNull
     private String username;
+    @NotNull
+    @Email
     private String email;
+    @NotNull
+    @Size(min = 8, message = "at least 8 characters")
     private String password;
 
     protected LoginDTO() {
