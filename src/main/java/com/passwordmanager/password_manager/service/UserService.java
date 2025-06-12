@@ -1,7 +1,7 @@
 package com.passwordmanager.password_manager.service;
 
 
-import com.passwordmanager.password_manager.dto.LoginDTO;
+import com.passwordmanager.password_manager.dto.LoginRequestDTO;
 import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
 import com.passwordmanager.password_manager.model.User;
 import com.passwordmanager.password_manager.repository.UserRepository;
@@ -24,7 +24,11 @@ public class UserService {
         return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("No User found with email: " + email));
     }
 
-    public User registerNewUser(LoginDTO login) {
+    public User getUserByUsername(String username) throws UserNotFoundException {
+        return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("No User found with email: " + username));
+    }
+
+    public User registerNewUser(LoginRequestDTO login) {
         //TODO: Do more checks (validation here)
         //Are more validations needed if we already implemented the validationhandler???
 

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public class LoginDTO {
+public class LoginRequestDTO {
 
     @NotNull
     private String username;
@@ -15,10 +15,10 @@ public class LoginDTO {
     @Size(min = 8, message = "at least 8 characters")
     private String password;
 
-    protected LoginDTO() {
+    protected LoginRequestDTO() {
     }
 
-    public LoginDTO(String username, String email, String password) {
+    public LoginRequestDTO(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
