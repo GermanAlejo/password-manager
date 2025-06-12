@@ -16,20 +16,17 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        //This should change in prod
         http.csrf(AbstractHttpConfigurer::disable) //Disable for APIs (enable for forms)
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth")
-                                .permitAll()
+                .authorizeHttpRequests(auth -> auth
+                                .requestMatchers("/api/passwords/**").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
                                 .anyRequest()
                                 .authenticated());
         return http.build();

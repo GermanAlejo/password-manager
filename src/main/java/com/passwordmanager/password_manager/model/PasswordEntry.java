@@ -3,30 +3,33 @@ package com.passwordmanager.password_manager.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document
 public class PasswordEntry {
 
     @Id
-    private Long id;
+    private String id;
     private String entryName;
-    private String username;
     @Indexed(unique = true)
     private String encryptedPassword;
+    @Field("user_id")
+    private String userId;
 
-    private PasswordEntry() {
+    protected PasswordEntry() {
     }
 
-    public PasswordEntry(String entryName, String encryptedPassword) {
+    public PasswordEntry(String entryName, String encryptedPassword, String userId) {
         this.entryName = entryName;
         this.encryptedPassword = encryptedPassword;
+        this.userId = userId;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -38,14 +41,6 @@ public class PasswordEntry {
         this.entryName = entryName;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEncryptedPassword() {
         return encryptedPassword;
     }
@@ -54,12 +49,19 @@ public class PasswordEntry {
         this.encryptedPassword = encryptedPassword;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
         return "PasswordEntry{" +
                 "id=" + id +
                 ", entryName='" + entryName + '\'' +
-                ", username='" + username + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
                 '}';
     }

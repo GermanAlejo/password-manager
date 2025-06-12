@@ -36,6 +36,7 @@ public class AuthController {
     @GetMapping("/login")
     public ResponseEntity<AuthResponseDTO> userLogin(@Valid @RequestBody LoginRequestDTO loginRequest) throws UserNotFoundException {
         // 1. Authenticate (throws exception if invalid)
+        //Should I pass here the hashe/unhashed password?
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
