@@ -15,19 +15,22 @@ public class User {
     private String email;
     @Indexed(unique = true)
     private String masterPasswordHash; //hashed password
+    private String salt; //for encryption key derivation
 
     protected User() {
     }
 
-    public User(String username, String email) {
+    public User(String username, String email, String salt) {
         this.username = username;
         this.email = email;
+        this.salt = salt;
     }
 
-    public User(String username, String email, String masterPasswordHash) {
+    public User(String username, String email, String masterPasswordHash, String salt) {
         this.username = username;
         this.email = email;
         this.masterPasswordHash = masterPasswordHash;
+        this.salt = salt;
     }
 
     public String getId() {
@@ -62,6 +65,14 @@ public class User {
         this.masterPasswordHash = masterPasswordHash;
     }
 
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(final String salt) {
+        this.salt = salt;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -69,6 +80,7 @@ public class User {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", masterPasswordHash='" + masterPasswordHash + '\'' +
+                ", salt='" + salt + '\'' +
                 '}';
     }
 }

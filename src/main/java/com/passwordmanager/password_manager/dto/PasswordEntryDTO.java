@@ -8,8 +8,6 @@ public class PasswordEntryDTO {
     private String entryName;
     @NotNull
     private String password;
-    @NotNull
-    private String userName;
 
     protected PasswordEntryDTO() {}
 
@@ -34,11 +32,4 @@ public class PasswordEntryDTO {
         this.password = password;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
 }

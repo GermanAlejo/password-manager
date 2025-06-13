@@ -1,23 +1,32 @@
 package com.passwordmanager.password_manager.service;
 
 
+import com.passwordmanager.password_manager.controller.AuthController;
 import com.passwordmanager.password_manager.dto.LoginRequestDTO;
 import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
 import com.passwordmanager.password_manager.model.User;
 import com.passwordmanager.password_manager.repository.UserRepository;
 import com.passwordmanager.password_manager.security.EncryptionService;
+import com.passwordmanager.password_manager.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
     //Check: Service inside service??
     private final EncryptionService encryptionService;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, EncryptionService encryptionService) {
+    public UserService(UserRepository userRepository, EncryptionService encryptionService, JwtService jwtService) {
         this.userRepository = userRepository;
         this.encryptionService = encryptionService;
+        this.jwtService = jwtService;
     }
 
     public User getUserById(String userId) throws UserNotFoundException {
@@ -30,6 +39,20 @@ public class UserService {
 
     public User getUserByUsername(String username) throws UserNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("No User found with email: " + username));
+    }
+
+    //TODO: Maybe custom exception? Should this method be here?
+    public String login(LoginRequestDTO login) throws Exception {
+        User user = userRepository.findByUsername(login.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if(!encryptionService.matches(login.getPassword(), user.getMasterPasswordHash(), user.getSalt())) {
+            log.error("User not found with username: " + user.getUsername());
+            //TODO: CUstom exception here
+            throw new Exception("");
+        }
+        log.info("User found");
+        log.info("");
+
+        return jwtService.generateToken(user);
     }
 
     public User registerNewUser(LoginRequestDTO login) {

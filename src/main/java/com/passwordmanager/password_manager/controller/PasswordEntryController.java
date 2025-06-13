@@ -5,8 +5,11 @@ import com.passwordmanager.password_manager.exceptions.PasswordEntryNotFoundExce
 import com.passwordmanager.password_manager.model.PasswordEntry;
 import com.passwordmanager.password_manager.service.PasswordEntryService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +19,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/passwords")
 public class PasswordEntryController {
+
+  private static final Logger log = LoggerFactory.getLogger(PasswordEntryController.class);
 
     private final PasswordEntryService passwordEntryService;
 
@@ -45,7 +50,14 @@ public class PasswordEntryController {
         return ResponseEntity.ok(entryDTOList);
     }
 
-  //TODO: Create new entry here
+  //TODO: Create new entry her
+  @PostMapping("createEntry")
+  public ResponseEntity<PasswordEntryDTO> createNewEntry(@Valid @RequestBody PasswordEntryDTO passwordEntryDTO) {
+
+      PasswordEntry newEntry = passwordEntryService.createNewEntry(passwordEntryDTO);
+      PasswordEntryDTO responseEntry = new PasswordEntryDTO(newEntry.getEntryName(), newEntry.getEncryptedPassword());
+      return ResponseEntity.ok(responseEntry);
+  }
 
   //TODO: Delete entry here
 
