@@ -28,8 +28,8 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable) //Disable for APIs (enable for forms)
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers("/api/passwords/**").permitAll()
-                                //.requestMatchers("/api/auth/**").permitAll() //allow this if we need to test without auth
-                                .anyRequest())
+                                .requestMatchers("/api/auth/**").permitAll() //allow this if we need to test without auth
+                                .anyRequest().authenticated())
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

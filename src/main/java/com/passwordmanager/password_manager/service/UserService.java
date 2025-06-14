@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
+import java.security.Key;
+
 @Service
 public class UserService {
 
@@ -45,7 +48,7 @@ public class UserService {
     public String login(LoginRequestDTO login) throws Exception {
         User user = userRepository.findByUsername(login.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if(!encryptionService.matches(login.getPassword(), user.getMasterPasswordHash(), user.getSalt())) {
-            log.error("User not found with username: " + user.getUsername());
+            log.error("Credentials do not match: " + user.getUsername());
             //TODO: CUstom exception here
             throw new Exception("");
         }
@@ -55,19 +58,22 @@ public class UserService {
         return jwtService.generateToken(user);
     }
 
-    public User registerNewUser(LoginRequestDTO login) {
+    public User registerNewUser(LoginRequestDTO login) throws Exception {
+        log.info("Saving new User");
         //TODO: Do more checks (validation here)
         //Are more validations needed if we already implemented the validationhandler???
         String pass = login.getPassword();
         String userName = login.getUsername();
         String email = login.getEmail();
+        String salt = encryptionService.generateNewSalt();
 
-        //do validations here if needed?
+        //TODO: do validations here if needed?
 
-        //TODO: Hash the password here //Check this is correct
-        String hashedPassword = encryptionService.passwordEncoder().encode(pass);
+        SecretKey newKey = encryptionService.deriveKey(pass, salt);
+        String hashedPassword = encryptionService.encrypt(pass, newKey);
 
-        User newUser = new User(login.getUsername(), login.getEmail(), hashedPassword);
+        //Create new user and save it
+        User newUser = new User(userName, email, hashedPassword, salt);
         return userRepository.save(newUser);
     }
 }

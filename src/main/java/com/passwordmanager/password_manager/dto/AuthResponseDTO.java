@@ -1,22 +1,32 @@
 package com.passwordmanager.password_manager.dto;
 
+import jakarta.validation.constraints.NotNull;
 
 public class AuthResponseDTO {
 
-    private String token;
+    @NotNull
+    private String email;
+    @NotNull
+    private String username;
 
-    protected AuthResponseDTO(){}
-
-    public AuthResponseDTO(String token) {
-        this.token = token;
+    public AuthResponseDTO(String email, String username) {
+        this.email = email;
+        this.username = username;
     }
 
-    public String getToken() {
-        return token;
+    public String getEmail() {
+        return email;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }

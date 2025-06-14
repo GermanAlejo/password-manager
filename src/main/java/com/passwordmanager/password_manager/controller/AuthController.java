@@ -1,17 +1,16 @@
 package com.passwordmanager.password_manager.controller;
 
 import com.passwordmanager.password_manager.dto.AuthResponseDTO;
+import com.passwordmanager.password_manager.dto.LoginResponseDTO;
 import com.passwordmanager.password_manager.dto.LoginRequestDTO;
+import com.passwordmanager.password_manager.model.User;
 import com.passwordmanager.password_manager.security.EncryptionService;
 import com.passwordmanager.password_manager.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,8 +27,8 @@ public class AuthController {
 
     //TODO: Check DTO values here and call registration/login endpoint here
 
-    @GetMapping("/login")
-    public ResponseEntity<AuthResponseDTO> userLogin(@Valid @RequestBody LoginRequestDTO loginRequest) throws Exception {
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> userLogin(@Valid @RequestBody LoginRequestDTO loginRequest) throws Exception {
 
         log.info("Calling login service");
         String token = userService.login(loginRequest);
@@ -37,9 +36,15 @@ public class AuthController {
 
         // 4. Return response
         //Maybe a token here?
-        return ResponseEntity.ok(new AuthResponseDTO(token));
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
-    //public ResponseEntity<User> registerNewUser()
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDTO> registerNewUser(@Valid @RequestBody LoginRequestDTO loginRequestDTO) throws Exception {
+        log.info("Calling registration");
+        User newUser = userService.registerNewUser(loginRequestDTO);
+        log.info("");
+        return ResponseEntity.ok(new AuthResponseDTO(newUser.getEmail(), newUser.getUsername()));
+    }
 
 }

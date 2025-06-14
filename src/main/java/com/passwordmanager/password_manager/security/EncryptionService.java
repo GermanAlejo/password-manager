@@ -2,6 +2,7 @@ package com.passwordmanager.password_manager.security;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 import java.util.Objects;
@@ -18,15 +19,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.passwordmanager.password_manager.service.UserService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class EncryptionService {
 
     private static final Logger log = LoggerFactory.getLogger(EncryptionService.class);
 
     //TODO: CHECK OPTIONS HERE FOR ALL METHODS
-    public SecretKey deriveKey(String password, String salt) throws Exception{
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("app.encryption.algorithm");
+    public SecretKey deriveKey(String password, String salt) throws Exception {
+        log.info("Generating new key");
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), 65536, 256);
         SecretKey tmp = factory.generateSecret(spec);
         return new SecretKeySpec(tmp.getEncoded(), "AES");
@@ -53,9 +56,15 @@ public class EncryptionService {
         return Objects.equals(password, unHashedPassword);
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public String generateNewSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[20];
+        random.nextBytes(bytes);
+        return byteToString(bytes);
+    }
+
+    public String byteToString(byte[] bytes) {
+        return Base64.getEncoder().encodeToString(bytes);
     }
 
 }
