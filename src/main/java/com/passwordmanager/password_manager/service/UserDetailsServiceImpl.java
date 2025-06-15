@@ -6,18 +6,21 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.passwordmanager.password_manager.model.User;
 import com.passwordmanager.password_manager.model.UserDetailsImpl;
 import com.passwordmanager.password_manager.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
+//TODO: This might not be needed
+@Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-  private final UserRepository userRepository;
+  private final UserService userService;
 
-  public UserDetailsServiceImpl(UserRepository userRepository) {
-    this.userRepository = userRepository;
+  public UserDetailsServiceImpl(UserService userService) {
+    this.userService = userService;
   }
 
   @Override
-  public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-    User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+  public UserDetails loadUserByUsername(final String identifier) throws UsernameNotFoundException {
+    User user = userService.findUserByUsernameOrEmail(identifier);
     return new UserDetailsImpl(user);
   }
 }

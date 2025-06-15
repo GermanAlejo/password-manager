@@ -1,8 +1,10 @@
 package com.passwordmanager.password_manager.service;
 
 
-import com.passwordmanager.password_manager.controller.AuthController;
 import com.passwordmanager.password_manager.dto.LoginRequestDTO;
+import com.passwordmanager.password_manager.exceptions.EncryptionException;
+import com.passwordmanager.password_manager.exceptions.InvalidArgumentsException;
+import com.passwordmanager.password_manager.exceptions.UserAlreadyRegisteredException;
 import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
 import com.passwordmanager.password_manager.model.User;
 import com.passwordmanager.password_manager.repository.UserRepository;
@@ -13,8 +15,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import java.security.Key;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 @Service
 public class UserService {
@@ -44,33 +52,51 @@ public class UserService {
         return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("No User found with email: " + username));
     }
 
-    //TODO: Maybe custom exception? Should this method be here?
-    public String login(LoginRequestDTO login) throws Exception {
-        User user = userRepository.findByUsername(login.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        if(!encryptionService.matches(login.getPassword(), user.getMasterPasswordHash(), user.getSalt())) {
-            log.error("Credentials do not match: " + user.getUsername());
-            //TODO: CUstom exception here
-            throw new Exception("");
-        }
-        log.info("User found");
-        log.info("");
-
-        return jwtService.generateToken(user);
+    public boolean existsByUsernameOrEmail(String identifier) {
+        return (userRepository.existsByEmail(identifier) || userRepository.existsByUsername(identifier));
     }
 
-    public User registerNewUser(LoginRequestDTO login) throws Exception {
+    public User findUserByUsernameOrEmail(String identifier) {
+        return userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByEmail(identifier))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    //TODO: Maybe custom exception? Should this method be here?
+    public String login(LoginRequestDTO loginRequestDTO) throws EncryptionException, UsernameNotFoundException {
+        try {
+            User user = findUserByUsernameOrEmail(loginRequestDTO.getLoginIdentifier());
+
+            if (!encryptionService.matches(loginRequestDTO.getPassword(), user.getMasterPasswordHash(), user.getSalt())) {
+                log.error("Credentials do not match: " + user.getUsername());
+                throw new InvalidArgumentsException("Username/Password not valid");
+            }
+            log.info("User found");
+            log.info("");
+
+            return jwtService.generateToken(user);
+        } catch (BadPaddingException e) {
+            throw new EncryptionException("Wrong key");
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("Could not decrypt/encrypt", e);
+        }
+    }
+
+    public User registerNewUser(LoginRequestDTO login) throws UserAlreadyRegisteredException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         log.info("Saving new User");
+        if(existsByUsernameOrEmail(login.getLoginIdentifier())) {
+            log.error("User already in DB");
+            throw new UserAlreadyRegisteredException("User already in DB");
+        }
+
         //TODO: Do more checks (validation here)
         //Are more validations needed if we already implemented the validationhandler???
         String pass = login.getPassword();
         String userName = login.getUsername();
         String email = login.getEmail();
-        String salt = encryptionService.generateNewSalt();
+        byte[] salt = encryptionService.generateSalt();
 
-        //TODO: do validations here if needed?
-
-        SecretKey newKey = encryptionService.deriveKey(pass, salt);
-        String hashedPassword = encryptionService.encrypt(pass, newKey);
+        String hashedPassword = encryptionService.encrypt(pass, salt);
 
         //Create new user and save it
         User newUser = new User(userName, email, hashedPassword, salt);

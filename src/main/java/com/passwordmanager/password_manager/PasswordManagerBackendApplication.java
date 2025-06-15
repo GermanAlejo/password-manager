@@ -28,7 +28,7 @@ public class PasswordManagerBackendApplication {
 	/*
 	This is a testing method
 	 */
-	@Bean
+	//@Bean
 	public CommandLineRunner demo(UserRepository repository, PasswordRepository repository2) {
 		return (args) -> {
 			// save a few customers

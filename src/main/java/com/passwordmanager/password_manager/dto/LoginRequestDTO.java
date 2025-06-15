@@ -6,9 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public class LoginRequestDTO {
 
-    @NotNull
     private String username;
-    @NotNull
     @Email
     private String email;
     @NotNull
@@ -22,6 +20,19 @@ public class LoginRequestDTO {
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+
+    public boolean isValid() {
+        return (username != null && !username.isBlank()) ||
+                (email != null && !email.isBlank());
+    }
+
+    public String getLoginIdentifier() {
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+        return email;
     }
 
     public String getUsername() {

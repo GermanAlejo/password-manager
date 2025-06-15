@@ -1,12 +1,8 @@
 package com.passwordmanager.password_manager.dto;
 
-import jakarta.validation.constraints.NotNull;
-
 public class AuthResponseDTO {
 
-    @NotNull
     private String email;
-    @NotNull
     private String username;
 
     public AuthResponseDTO(String email, String username) {
