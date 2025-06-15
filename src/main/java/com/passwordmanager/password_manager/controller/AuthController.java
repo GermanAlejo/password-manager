@@ -27,10 +27,8 @@ public class AuthController {
 
 
     //TODO: Check DTO values here and call registration/login endpoint here
-    //TODO: Custom exception here
     @GetMapping("/login")
     public ResponseEntity<?> userLogin(@Valid @RequestBody LoginRequestDTO loginRequest) throws EncryptionException {
-
         if(!loginRequest.isValid()) {
             return ResponseEntity.badRequest().body("Username or email must be provided");
         }
