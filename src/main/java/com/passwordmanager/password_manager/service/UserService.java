@@ -56,7 +56,7 @@ public class UserService {
         return (userRepository.existsByEmail(identifier) || userRepository.existsByUsername(identifier));
     }
 
-    public User findUserByUsernameOrEmail(String identifier) {
+    public User findUserByUsernameOrEmail(String identifier) throws UsernameNotFoundException{
         return userRepository.findByUsername(identifier)
                 .or(() -> userRepository.findByEmail(identifier))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -66,8 +66,9 @@ public class UserService {
     public String login(LoginRequestDTO loginRequestDTO) throws EncryptionException, UsernameNotFoundException {
         try {
             User user = findUserByUsernameOrEmail(loginRequestDTO.getLoginIdentifier());
-
-            if (!encryptionService.matches(loginRequestDTO.getPassword(), user.getMasterPasswordHash(), user.getSalt())) {
+            //Get decoded salt
+            byte[] decodedSalt = encryptionService.decodeSalt(user.getSalt());
+            if (!encryptionService.matches(loginRequestDTO.getPassword(), user.getMasterPasswordHash(), decodedSalt)) {
                 log.error("Credentials do not match: " + user.getUsername());
                 throw new InvalidArgumentsException("Username/Password not valid");
             }
@@ -84,22 +85,23 @@ public class UserService {
 
     public User registerNewUser(LoginRequestDTO login) throws UserAlreadyRegisteredException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         log.info("Saving new User");
+        //TODO: This validation enough?
         if(existsByUsernameOrEmail(login.getLoginIdentifier())) {
             log.error("User already in DB");
             throw new UserAlreadyRegisteredException("User already in DB");
         }
 
-        //TODO: Do more checks (validation here)
         //Are more validations needed if we already implemented the validationhandler???
         String pass = login.getPassword();
         String userName = login.getUsername();
         String email = login.getEmail();
         byte[] salt = encryptionService.generateSalt();
 
-        String hashedPassword = encryptionService.encrypt(pass, salt);
-
+        String hashedPassword = encryptionService.hashPassword(pass, salt);
+        //Encode the salt also
+        String encodedSalt = encryptionService.encodeSalt(salt);
         //Create new user and save it
-        User newUser = new User(userName, email, hashedPassword, salt);
+        User newUser = new User(userName, email, hashedPassword, encodedSalt);
         return userRepository.save(newUser);
     }
 }

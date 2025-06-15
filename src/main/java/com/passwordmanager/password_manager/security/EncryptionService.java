@@ -33,6 +33,8 @@ public class EncryptionService {
 
     private static final Logger log = LoggerFactory.getLogger(EncryptionService.class);
 
+
+
     //TODO: CHECK OPTIONS HERE FOR ALL METHODS
     public SecretKey deriveKey(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
             log.info("Generating new key");
@@ -61,12 +63,21 @@ public class EncryptionService {
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 
-    //TODO: Check if this makes sense (order and methods called in proper location)
+    public String hashPassword(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        SecretKeyFactory factory = SecretKeyFactory.getInstance(PDKDF_ALGORITHM);
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_LENGTH);
+        byte[] hash = factory.generateSecret(spec).getEncoded();
+        return Base64.getEncoder().encodeToString(hash);
+    }
+
     public boolean matches(String password, String hashedPassword, byte[] salt) throws NoSuchPaddingException, IllegalBlockSizeException,
             NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, InvalidKeySpecException {
-            //TODO: bug here
-            String unHashedPassword = decrypt(hashedPassword, salt);
-            return Objects.equals(password, unHashedPassword);
+            try {
+                String inputHash = hashPassword(password, salt);
+                return Objects.equals(inputHash, hashedPassword);
+            } catch (Exception e) {
+                return false;
+            }
     }
 
     public byte[] generateSalt() {
@@ -76,8 +87,18 @@ public class EncryptionService {
         return salt;
     }
 
+    public String encodeSalt(byte[] salt) {
+        return Base64.getEncoder().encodeToString(salt);
+    }
+
+    public byte[] decodeSalt(String saltEncoded) {
+        return Base64.getDecoder().decode(saltEncoded);
+    }
+
     public String byteToString(byte[] bytes) {
         return Base64.getEncoder().encodeToString(bytes);
     }
+
+
 
 }
