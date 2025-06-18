@@ -2,7 +2,6 @@ package com.passwordmanager.password_manager.config;
 
 import java.io.IOException;
 
-import com.mongodb.lang.NonNullApi;
 import com.passwordmanager.password_manager.service.UserDetailsServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -45,7 +44,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     try {
       String username = jwtService.extractUsername(jwt);
-      System.out.println("Username: " + username);
       logger.info("Validating JWT");
       //First validate token
       if(jwtService.isExpired(jwt)) {
@@ -56,14 +54,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       //Check if validation is needed
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        System.out.println("user gotten");
         //Final Validation against username
         if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-          //UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-          //        userDetails, null, userDetails.getAuthorities());
-          System.out.println("Good test");
           authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authToken);
         }
@@ -72,7 +66,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       logger.error("Jwt expired");
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
     } catch (JwtException | UsernameNotFoundException e) {
-      System.out.println("bad");
       logger.error("User not found");
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
     }

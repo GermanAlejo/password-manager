@@ -4,11 +4,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.passwordmanager.password_manager.model.User;
-import com.passwordmanager.password_manager.model.UserDetailsImpl;
-import com.passwordmanager.password_manager.repository.UserRepository;
+import com.passwordmanager.password_manager.security.UserDetailsImpl;
 import org.springframework.stereotype.Service;
 
-//TODO: This might not be needed
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 

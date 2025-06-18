@@ -1,7 +1,9 @@
-package com.passwordmanager.password_manager.model;
+package com.passwordmanager.password_manager.security;
 
 import java.util.Collection;
 import java.util.List;
+
+import com.passwordmanager.password_manager.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -11,6 +13,10 @@ public class UserDetailsImpl implements UserDetails {
 
   public UserDetailsImpl(User user) {
     this.user = user;
+  }
+
+  public User getUser() {
+    return user;
   }
 
   // Return roles/authorities as needed. For now:
