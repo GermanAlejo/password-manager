@@ -41,11 +41,11 @@ public class JwtService {
         .getSubject();
   }
 
-  public boolean isTokenValid(String token, User user) {
-    return extractUsername(token).equals(user.getUsername()) && !isExpired(token);
+  public boolean isTokenValid(String token, String username) {
+    return extractUsername(token).equals(username);
   }
 
-  private boolean isExpired(String token) {
+  public boolean isExpired(String token) {
     return getJwtParser()
         .parseClaimsJws(token)
         .getBody()
