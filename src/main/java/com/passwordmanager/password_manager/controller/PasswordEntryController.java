@@ -4,6 +4,7 @@ import com.passwordmanager.password_manager.dto.PasswordEntryDTO;
 import com.passwordmanager.password_manager.exceptions.EncryptionException;
 import com.passwordmanager.password_manager.exceptions.IllegalPasswordEntryException;
 import com.passwordmanager.password_manager.exceptions.PasswordEntryNotFoundException;
+import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
 import com.passwordmanager.password_manager.model.PasswordEntry;
 import com.passwordmanager.password_manager.security.UserDetailsImpl;
 import com.passwordmanager.password_manager.service.PasswordEntryService;
@@ -28,43 +29,41 @@ public class PasswordEntryController {
 
   private static final Logger log = LoggerFactory.getLogger(PasswordEntryController.class);
 
-    private final PasswordEntryService passwordEntryService;
+  private final PasswordEntryService passwordEntryService;
 
-    public PasswordEntryController(PasswordEntryService passwordEntryService) {
-        this.passwordEntryService = passwordEntryService;
-    }
+  public PasswordEntryController(PasswordEntryService passwordEntryService) {
+    this.passwordEntryService = passwordEntryService;
+  }
 
-    //Maybe here makes more sense to request user?
-    @GetMapping("list")
-    public ResponseEntity<List<PasswordEntryDTO>> getEntriesForUser() throws PasswordEntryNotFoundException {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (!auth.isAuthenticated()) {
-            log.error("User is not authenticated");
-            throw new BadCredentialsException("Credentials expired for this session");
-        }
-        UserDetailsImpl user = (UserDetailsImpl) auth.getPrincipal();
-        List<PasswordEntry> allEntries = passwordEntryService.listEntriesByUserId(user.getUser().getId());
-        List<PasswordEntryDTO> entryDTOList = allEntries.stream()
-                .map(passwordEntry -> new PasswordEntryDTO(passwordEntry.getEntryName(), passwordEntry.getEncryptedPassword()))
-                .toList();
-        return ResponseEntity.ok(entryDTOList);
+  //TODO: retrieve all entries and descrypt passwords
+  @GetMapping("list")
+  public ResponseEntity<List<PasswordEntryDTO>> getEntriesForUser() throws PasswordEntryNotFoundException, UserNotFoundException {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (!auth.isAuthenticated()) {
+      log.error("User is not authenticated");
+      throw new BadCredentialsException("Credentials expired for this session");
     }
+    UserDetailsImpl user = (UserDetailsImpl) auth.getPrincipal();
+    List<PasswordEntryDTO> allEntries = passwordEntryService.listEntriesByUserId(user.getUser().getId());
+    return ResponseEntity.ok(allEntries);
+  }
 
   @PostMapping("createEntry")
-  public ResponseEntity<PasswordEntryDTO> createNewEntry(@Valid @RequestBody PasswordEntryDTO passwordEntryDTO) throws IllegalPasswordEntryException, EncryptionException {
-      Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-      if (!auth.isAuthenticated()) {
-          log.error("User is not authenticated");
-          throw new BadCredentialsException("Credentials expired for this session");
-      }
-      if(passwordEntryService.doesEntryExists(passwordEntryDTO.getEntryName())) {
-          log.error("Entry already created");
-          throw new IllegalPasswordEntryException("Entry already created");
-      }
-      UserDetailsImpl customUser = (UserDetailsImpl) auth.getPrincipal();
-      PasswordEntry newEntry = passwordEntryService.createNewEntry(passwordEntryDTO, customUser.getUser());
-      PasswordEntryDTO responseEntry = new PasswordEntryDTO(newEntry.getEntryName(), newEntry.getEncryptedPassword());
-      return ResponseEntity.ok(responseEntry);
+  public ResponseEntity<PasswordEntryDTO> createNewEntry(@Valid @RequestBody PasswordEntryDTO passwordEntryDTO)
+      throws IllegalPasswordEntryException, EncryptionException {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (!auth.isAuthenticated()) {
+      log.error("User is not authenticated");
+      throw new BadCredentialsException("Credentials expired for this session");
+    }
+    if (passwordEntryService.doesEntryExists(passwordEntryDTO.getEntryName())) {
+      log.error("Entry already created");
+      throw new IllegalPasswordEntryException("Entry already created");
+    }
+    UserDetailsImpl customUser = (UserDetailsImpl) auth.getPrincipal();
+    PasswordEntry newEntry = passwordEntryService.createNewEntry(passwordEntryDTO, customUser.getUser());
+    PasswordEntryDTO responseEntry = new PasswordEntryDTO(newEntry.getEntryName(), newEntry.getEncryptedPassword());
+    return ResponseEntity.ok(responseEntry);
   }
 
   //TODO: Delete entry here
