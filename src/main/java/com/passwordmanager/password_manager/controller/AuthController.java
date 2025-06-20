@@ -34,12 +34,12 @@ public class AuthController {
         }
 
         log.info("Calling login service");
-        String token = userService.login(loginRequest);
+        LoginResponseDTO tokenResponse = userService.login(loginRequest);
         log.info("");
 
-        // 4. Return response
-        //Maybe a token here?
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+
+        //Let's return the token and the expiration date
+        return ResponseEntity.ok(tokenResponse);
     }
 
     @PostMapping("/register")

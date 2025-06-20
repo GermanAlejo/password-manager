@@ -24,6 +24,7 @@ public class JwtService {
 
   }
 
+  //TODO: BUG HERE -> It is not 24h as expiration it is setting years
   public String generateToken(User user) {
     Key secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     return Jwts.builder()
@@ -51,6 +52,13 @@ public class JwtService {
         .getBody()
         .getExpiration()
         .before(new Date());
+  }
+
+  public Date getExpirationDate(String token) {
+    return getJwtParser()
+        .parseClaimsJws(token)
+        .getBody()
+        .getExpiration();
   }
 
   private JwtParser getJwtParser() {
