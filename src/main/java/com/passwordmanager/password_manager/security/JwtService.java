@@ -4,6 +4,8 @@ import java.security.Key;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.passwordmanager.password_manager.model.User;
@@ -66,6 +68,18 @@ public class JwtService {
     return Jwts.parserBuilder()
         .setSigningKey(secretKey)
         .build();
+  }
+
+  // Add token parsing capability
+  public Claims parseToken(String token) {
+    return getJwtParser()
+            .parseClaimsJws(token)
+            .getBody();
+  }
+
+  // Specific method to extract JWT ID
+  public String extractTokenId(String token) {
+    return parseToken(token).getId();
   }
 
 }

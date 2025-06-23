@@ -40,20 +40,18 @@ public class EncryptionService {
     return new SecretKeySpec(tmp.getEncoded(), KEY_ALGORIGTHM);
   }
 
-  public String encrypt(String plainText, byte[] salt)
+  public String encrypt(String plainText, SecretKey masterKey)
       throws NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException {
-    SecretKey key = deriveKey(plainText, salt);
     Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-    cipher.init(Cipher.ENCRYPT_MODE, key);
+    cipher.init(Cipher.ENCRYPT_MODE, masterKey);
     byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
     return Base64.getEncoder().encodeToString(encryptedBytes);
   }
 
-  public String decrypt(String encryptedText, byte[] salt)
+  public String decrypt(String encryptedText, SecretKey masterKey)
       throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
-    SecretKey key = deriveKey(encryptedText, salt);
     Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-    cipher.init(Cipher.DECRYPT_MODE, key);
+    cipher.init(Cipher.DECRYPT_MODE, masterKey);
     byte[] decodedBytes = Base64.getDecoder().decode(encryptedText);
     byte[] decryptedBytes = cipher.doFinal(decodedBytes);
     return new String(decryptedBytes, StandardCharsets.UTF_8);

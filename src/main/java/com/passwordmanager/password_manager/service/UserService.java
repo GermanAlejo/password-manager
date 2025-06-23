@@ -6,6 +6,7 @@ import com.passwordmanager.password_manager.exceptions.EncryptionException;
 import com.passwordmanager.password_manager.exceptions.InvalidArgumentsException;
 import com.passwordmanager.password_manager.exceptions.UserAlreadyRegisteredException;
 import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
+import com.passwordmanager.password_manager.model.KeyCache;
 import com.passwordmanager.password_manager.model.User;
 import com.passwordmanager.password_manager.repository.UserRepository;
 import com.passwordmanager.password_manager.security.EncryptionService;
@@ -30,15 +31,16 @@ public class UserService {
 
   private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
-  //Check: Service inside service??
   private final EncryptionService encryptionService;
   private final UserRepository userRepository;
   private final JwtService jwtService;
+  private final KeyCache keyCache;
 
-  public UserService(UserRepository userRepository, EncryptionService encryptionService, JwtService jwtService) {
+  public UserService(UserRepository userRepository, EncryptionService encryptionService, JwtService jwtService, KeyCache keyCache) {
     this.userRepository = userRepository;
     this.encryptionService = encryptionService;
     this.jwtService = jwtService;
+    this.keyCache = keyCache;
   }
 
   public User getUserById(String userId) throws UserNotFoundException {
@@ -74,8 +76,17 @@ public class UserService {
       log.info("User found");
       log.info("");
 
+      //Set  key cache for other operations
+      byte[] cacheSalt = encryptionService.decodeSalt(user.getEncryptedVaultKey());
+      SecretKey masterKey = encryptionService.deriveKey(loginRequestDTO.getPassword(), cacheSalt);
+
+      //generate jwt token
       String token = jwtService.generateToken(user);
       Date expirationDate = jwtService.getExpirationDate(token);
+
+      //Chache the masterKey
+      keyCache.put(user.getId(), token, masterKey);
+
       return new LoginResponseDTO(token, expirationDate);
     }
     catch (BadPaddingException e) {
@@ -84,6 +95,11 @@ public class UserService {
     catch (GeneralSecurityException e) {
       throw new IllegalStateException("Could not decrypt/encrypt", e);
     }
+  }
+
+  //TODO: Create request for this method
+  public void logout(String userId, String authToken) {
+    keyCache.remove(userId, authToken);
   }
 
   public User registerNewUser(LoginRequestDTO login)
@@ -101,12 +117,14 @@ public class UserService {
     String userName = login.getUsername();
     String email = login.getEmail();
     byte[] salt = encryptionService.generateSalt();
+    byte[] encryptionSalt = encryptionService.generateSalt();
 
     String hashedPassword = encryptionService.hashPassword(pass, salt);
     //Encode the salt also
     String encodedSalt = encryptionService.encodeSalt(salt);
+    String encodedEncryptionSalt = encryptionService.encodeSalt(encryptionSalt);
     //Create new user and save it
-    User newUser = new User(userName, email, hashedPassword, encodedSalt);
+    User newUser = new User(userName, email, hashedPassword, encodedSalt, encodedEncryptionSalt);
     return userRepository.save(newUser);
   }
 }

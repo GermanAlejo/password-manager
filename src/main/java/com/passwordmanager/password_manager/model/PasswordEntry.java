@@ -54,7 +54,7 @@ public class PasswordEntry {
     }
 
     public void setUserId(String userId) {
-        this.userId = userId;
+        this.userId = userId; 
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.passwordmanager.password_manager.exceptions.IllegalPasswordEntryExcep
 import com.passwordmanager.password_manager.exceptions.PasswordEntryNotFoundException;
 import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
 import com.passwordmanager.password_manager.model.PasswordEntry;
+import com.passwordmanager.password_manager.security.JwtService;
 import com.passwordmanager.password_manager.security.UserDetailsImpl;
 import com.passwordmanager.password_manager.service.PasswordEntryService;
 import jakarta.validation.Valid;
@@ -15,11 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -37,19 +34,22 @@ public class PasswordEntryController {
 
   //TODO: retrieve all entries and descrypt passwords
   @GetMapping("list")
-  public ResponseEntity<List<PasswordEntryDTO>> getEntriesForUser() throws PasswordEntryNotFoundException, UserNotFoundException {
+  public ResponseEntity<List<PasswordEntryDTO>> getEntriesForUser(@RequestHeader("Authorization") String authHeader) throws PasswordEntryNotFoundException, UserNotFoundException {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (!auth.isAuthenticated()) {
       log.error("User is not authenticated");
       throw new BadCredentialsException("Credentials expired for this session");
     }
+    //extract the token from the request
+    String jwt = authHeader.substring(7); // Bearer <token>
+    //TODO: SHould check this here or useless?
     UserDetailsImpl user = (UserDetailsImpl) auth.getPrincipal();
-    List<PasswordEntryDTO> allEntries = passwordEntryService.listEntriesByUserId(user.getUser().getId());
+    List<PasswordEntryDTO> allEntries = passwordEntryService.listEntriesByUserId(user.getUser().getId(), jwt);
     return ResponseEntity.ok(allEntries);
   }
 
   @PostMapping("createEntry")
-  public ResponseEntity<PasswordEntryDTO> createNewEntry(@Valid @RequestBody PasswordEntryDTO passwordEntryDTO)
+  public ResponseEntity<PasswordEntryDTO> createNewEntry(@Valid @RequestBody PasswordEntryDTO passwordEntryDTO, @RequestHeader("Authorization") String authHeader)
       throws IllegalPasswordEntryException, EncryptionException {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (!auth.isAuthenticated()) {
@@ -60,8 +60,10 @@ public class PasswordEntryController {
       log.error("Entry already created");
       throw new IllegalPasswordEntryException("Entry already created");
     }
+    //extract the token from the request
+    String jwt = authHeader.substring(7); // Bearer <token>
     UserDetailsImpl customUser = (UserDetailsImpl) auth.getPrincipal();
-    PasswordEntry newEntry = passwordEntryService.createNewEntry(passwordEntryDTO, customUser.getUser());
+    PasswordEntry newEntry = passwordEntryService.createNewEntry(passwordEntryDTO, customUser.getUser(), jwt);
     PasswordEntryDTO responseEntry = new PasswordEntryDTO(newEntry.getEntryName(), newEntry.getEncryptedPassword());
     return ResponseEntity.ok(responseEntry);
   }
