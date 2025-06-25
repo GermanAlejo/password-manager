@@ -1,5 +1,6 @@
 package com.passwordmanager.password_manager.model;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,16 +14,19 @@ public class PasswordEntry {
     private String entryName;
     @Indexed(unique = true)
     private String encryptedPassword;
+    @NotNull
+    private String iv;
     @Field("user_id")
     private String userId;
 
     protected PasswordEntry() {
     }
 
-    public PasswordEntry(String entryName, String encryptedPassword, String userId) {
+    public PasswordEntry(String entryName, String encryptedPassword, String iv, String userId) {
         this.entryName = entryName;
         this.encryptedPassword = encryptedPassword;
         this.userId = userId;
+        this.iv = iv;
     }
 
     public String getId() {
@@ -47,6 +51,14 @@ public class PasswordEntry {
 
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
+    }
+
+    public String getIv() {
+        return iv;
+    }
+
+    public void setIv(String iv) {
+        this.iv = iv;
     }
 
     public String getUserId() {

@@ -52,8 +52,8 @@ public class PasswordEntryService {
               .orElseThrow(() -> new SecurityException("Session expired or invalid"));
 
       //encrypt with master key
-      String encryptedPassword = encryptionService.encrypt(passwordEntryDTO.getPassword(), masterKey);
-      PasswordEntry newEntry = new PasswordEntry(passwordEntryDTO.getEntryName(), encryptedPassword, user.getId());
+      EncryptionService.EncryptedData encryptedData = encryptionService.encrypt(passwordEntryDTO.getPassword(), masterKey);
+      PasswordEntry newEntry = new PasswordEntry(passwordEntryDTO.getEntryName(), encryptedData.ciphertext(), encryptedData.iv(), user.getId());
       return passwordRepository.save(newEntry);
     }
     catch (GeneralSecurityException e) {
@@ -80,12 +80,13 @@ public class PasswordEntryService {
 
   public Optional<PasswordEntryDTO> decryptEntry(SecretKey masterKey, PasswordEntry entry) {
     try {
-      String decryptedPass = encryptionService.decrypt(entry.getEncryptedPassword(), masterKey);
+      //Before decrypting we try to recover the iv
+      String iv = entry.getIv();
+      String decryptedPass = encryptionService.decrypt(entry.getEncryptedPassword(), iv, masterKey);
       PasswordEntryDTO newEntry = new PasswordEntryDTO(entry.getEntryName(), decryptedPass);
       return Optional.of(newEntry);
     }
-    catch (NoSuchPaddingException | InvalidKeyException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException |
-           InvalidKeySpecException e) {
+    catch (GeneralSecurityException e) {
       log.error("Encryption error", e);
       return Optional.empty();
     }

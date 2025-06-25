@@ -68,7 +68,7 @@ public class UserService {
     try {
       User user = findUserByUsernameOrEmail(loginRequestDTO.getLoginIdentifier());
       //Get decoded salt
-      byte[] decodedSalt = encryptionService.decodeSalt(user.getSalt());
+      byte[] decodedSalt = encryptionService.decodeBase64(user.getSalt());
       if (!encryptionService.matches(loginRequestDTO.getPassword(), user.getMasterPasswordHash(), decodedSalt)) {
         log.error("Credentials do not match: " + user.getUsername());
         throw new InvalidArgumentsException("Username/Password not valid");
@@ -77,7 +77,7 @@ public class UserService {
       log.info("");
 
       //Set  key cache for other operations
-      byte[] cacheSalt = encryptionService.decodeSalt(user.getEncryptedVaultKey());
+      byte[] cacheSalt = encryptionService.decodeBase64(user.getEncryptedVaultKey());
       SecretKey masterKey = encryptionService.deriveKey(loginRequestDTO.getPassword(), cacheSalt);
 
       //generate jwt token
@@ -121,8 +121,8 @@ public class UserService {
 
     String hashedPassword = encryptionService.hashPassword(pass, salt);
     //Encode the salt also
-    String encodedSalt = encryptionService.encodeSalt(salt);
-    String encodedEncryptionSalt = encryptionService.encodeSalt(encryptionSalt);
+    String encodedSalt = encryptionService.encodeBase64(salt);
+    String encodedEncryptionSalt = encryptionService.encodeBase64(encryptionSalt);
     //Create new user and save it
     User newUser = new User(userName, email, hashedPassword, encodedSalt, encodedEncryptionSalt);
     return userRepository.save(newUser);
