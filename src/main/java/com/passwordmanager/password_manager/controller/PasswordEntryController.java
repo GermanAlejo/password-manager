@@ -4,9 +4,7 @@ import com.passwordmanager.password_manager.dto.PasswordEntryDTO;
 import com.passwordmanager.password_manager.exceptions.EncryptionException;
 import com.passwordmanager.password_manager.exceptions.IllegalPasswordEntryException;
 import com.passwordmanager.password_manager.exceptions.PasswordEntryNotFoundException;
-import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
 import com.passwordmanager.password_manager.model.PasswordEntry;
-import com.passwordmanager.password_manager.security.JwtService;
 import com.passwordmanager.password_manager.security.UserDetailsImpl;
 import com.passwordmanager.password_manager.service.PasswordEntryService;
 import jakarta.validation.Valid;
@@ -32,9 +30,8 @@ public class PasswordEntryController {
     this.passwordEntryService = passwordEntryService;
   }
 
-  //TODO: retrieve all entries and descrypt passwords
   @GetMapping("list")
-  public ResponseEntity<List<PasswordEntryDTO>> getEntriesForUser(@RequestHeader("Authorization") String authHeader) throws PasswordEntryNotFoundException, UserNotFoundException {
+  public ResponseEntity<List<PasswordEntryDTO>> getEntriesForUser(@RequestHeader("Authorization") String authHeader) throws PasswordEntryNotFoundException {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (!auth.isAuthenticated()) {
       log.error("User is not authenticated");
@@ -42,7 +39,6 @@ public class PasswordEntryController {
     }
     //extract the token from the request
     String jwt = authHeader.substring(7); // Bearer <token>
-    //TODO: SHould check this here or useless?
     UserDetailsImpl user = (UserDetailsImpl) auth.getPrincipal();
     List<PasswordEntryDTO> allEntries = passwordEntryService.listEntriesByUserId(user.getUser().getId(), jwt);
     return ResponseEntity.ok(allEntries);
@@ -60,6 +56,7 @@ public class PasswordEntryController {
       log.error("Entry already created");
       throw new IllegalPasswordEntryException("Entry already created");
     }
+    log.info("Calling service");
     //extract the token from the request
     String jwt = authHeader.substring(7); // Bearer <token>
     UserDetailsImpl customUser = (UserDetailsImpl) auth.getPrincipal();

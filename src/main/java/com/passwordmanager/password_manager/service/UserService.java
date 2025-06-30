@@ -16,14 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 
 @Service
@@ -65,7 +58,7 @@ public class UserService {
   }
 
   public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws EncryptionException, UsernameNotFoundException {
-    try {
+
       User user = findUserByUsernameOrEmail(loginRequestDTO.getLoginIdentifier());
       //Get decoded salt
       byte[] decodedSalt = encryptionService.decodeBase64(user.getSalt());
@@ -88,13 +81,6 @@ public class UserService {
       keyCache.put(user.getId(), token, masterKey);
 
       return new LoginResponseDTO(token, expirationDate);
-    }
-    catch (BadPaddingException e) {
-      throw new EncryptionException("Wrong key");
-    }
-    catch (GeneralSecurityException e) {
-      throw new IllegalStateException("Could not decrypt/encrypt", e);
-    }
   }
 
   //TODO: Create request for this method
@@ -103,8 +89,7 @@ public class UserService {
   }
 
   public User registerNewUser(LoginRequestDTO login)
-      throws UserAlreadyRegisteredException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException,
-             BadPaddingException, InvalidKeyException {
+      throws UserAlreadyRegisteredException, EncryptionException {
     log.info("Saving new User");
     //TODO: This validation enough?
     if (existsByUsernameOrEmail(login.getLoginIdentifier())) {
