@@ -2,6 +2,7 @@ package com.passwordmanager.password_manager.service;
 
 import com.passwordmanager.password_manager.dto.PasswordEntryDTO;
 import com.passwordmanager.password_manager.exceptions.EncryptionException;
+import com.passwordmanager.password_manager.exceptions.InvalidArgumentsException;
 import com.passwordmanager.password_manager.exceptions.PasswordEntryNotFoundException;
 import com.passwordmanager.password_manager.exceptions.UserNotFoundException;
 import com.passwordmanager.password_manager.model.KeyCache;
@@ -90,6 +91,14 @@ public class PasswordEntryService {
       log.error("Encryption error", e);
       return Optional.empty();
     }
+  }
+
+  public void deleteEntry(String name) {
+      if (name == null || name.trim().isEmpty()) {
+        throw new InvalidArgumentsException("");
+      }
+
+      passwordRepository.deleteByEntryName(name);
   }
 
   public List<PasswordEntry> listAllEntries() {

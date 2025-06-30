@@ -11,6 +11,6 @@ public interface PasswordRepository extends MongoRepository<PasswordEntry, Strin
     //Custom methods
     Optional<PasswordEntry> findByEntryName(String entryName);
     Optional<List<PasswordEntry>> findByUserId(String userId);
-    //TODO: add delete and edit method
+    void deleteByEntryName(String entryName);
     boolean existsByEntryName(String entryName);
 }

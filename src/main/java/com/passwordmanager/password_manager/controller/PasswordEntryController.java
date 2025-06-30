@@ -68,7 +68,23 @@ public class PasswordEntryController {
     return ResponseEntity.ok(responseEntry);
   }
 
-  //TODO: Delete entry here
+  @PostMapping("deleteEntry")
+  public ResponseEntity<?> deleteEntry(@Valid @RequestBody PasswordEntryDTO dto, @RequestHeader("Authorization") String authHeader)
+      throws IllegalPasswordEntryException {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if(!auth.isAuthenticated()) {
+      log.error("User is not authenticated");
+      throw new BadCredentialsException("Credentials expired for this session");
+    }
+    if (!passwordEntryService.doesEntryExists(dto.getEntryName())) {
+      log.error("Entry does not exists");
+      throw new IllegalPasswordEntryException("Entry not found");
+    }
+    passwordEntryService.deleteEntry(dto.getEntryName());
+    return ResponseEntity.noContent().build(); // 204 No Content
+  }
 
   //TODO: Edit entry
+
+
 }
