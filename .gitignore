@@ -33,3 +33,20 @@ build/
 .vscode/
 
 .env
+
+# Frontend
+frontend/node_modules/
+frontend/.env*
+
+# Backend
+backend/target/
+backend/.settings/
+
+# Desktop (future)
+desktop/bin/
+desktop/build/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
