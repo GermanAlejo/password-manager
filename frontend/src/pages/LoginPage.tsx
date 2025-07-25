@@ -1,41 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
+import LoginForm from '../components/LoginForm';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Logging in with:', { email, password });
-    // You can add API call logic here
-  };
+    const handleLogin = (email: string, password: string) => {
+        // Simulate login (use API call here in real apps)
+        if (email === 'admin@example.com' && password === 'password') {
+            navigate('/dashboard');
+        } else {
+            alert('Invalid credentials');
+        }
+    };
 
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
-          />
+    return (
+        <div style={{ padding: '2rem' }}>
+            <LoginForm onSubmit={handleLogin} />
         </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  );
+    );
 };
 
 export default LoginPage;
