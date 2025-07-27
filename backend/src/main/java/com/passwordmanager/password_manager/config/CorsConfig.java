@@ -15,7 +15,7 @@ public class CorsConfig implements WebMvcConfigurer {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of("http://localhost:8080"));
+    config.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
     config.setAllowedHeaders(List.of("*"));
     config.setAllowCredentials(true);
@@ -28,7 +28,7 @@ public class CorsConfig implements WebMvcConfigurer {
   @Override
   public void addCorsMappings(CorsRegistry registry) {
     registry.addMapping(("/**"))
-        .allowedOrigins("http://localhost:8080")
+        .allowedOrigins("http://localhost:8080", "http://localhost:3000")
         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
         .allowedHeaders("Authorization", "Content-Type")
         .allowCredentials(true)
