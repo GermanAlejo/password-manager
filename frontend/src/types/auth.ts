@@ -5,5 +5,4 @@ export interface LoginCredentials {
 
 export interface AuthResponse {
     token: string;
-    //TODO: add expiration time here?
 }
